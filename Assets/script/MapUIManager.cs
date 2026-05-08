@@ -1,31 +1,41 @@
 using UnityEngine;
 using TMPro;
+using UnityEngine.UI;
 
 public class MapUIManager : MonoBehaviour
 {
     public static MapUIManager Instance;
 
-    public TextMeshProUGUI infoText;
+    public TextMeshProUGUI regionNameText;
 
-    private string defaultMessage = "Choose the region";
+    public Slider controlSlider;
+    public Slider intelSlider;
+    public Slider severitySlider;
 
     void Awake()
     {
         Instance = this;
     }
 
-    void Start()
+    public void ShowInfo(District d)
     {
-        ShowDefaultMessage();
+        regionNameText.text = d.gameObject.name;
+        UpdateBars(d);
     }
 
-    public void ShowInfo(string districtName)
+    public void UpdateBars(District d)
     {
-        infoText.text = districtName;
+        controlSlider.value = d.control;
+        intelSlider.value = d.intel;
+        severitySlider.value = d.severity;
     }
 
     public void ShowDefaultMessage()
     {
-        infoText.text = defaultMessage;
+        regionNameText.text = "choose the region";
+
+        controlSlider.value = 0;
+        intelSlider.value = 0;
+        severitySlider.value = 0;
     }
 }

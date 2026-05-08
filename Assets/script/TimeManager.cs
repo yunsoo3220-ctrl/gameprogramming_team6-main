@@ -20,7 +20,7 @@ public class TimeManager : MonoBehaviour
 
     void Start()
     {
-        currentDate = new DateTime(2025, 1, 1);
+        currentDate = new DateTime(2098, 1, 1);
         UpdateDateUI();
     }
 
@@ -59,5 +59,9 @@ public class TimeManager : MonoBehaviour
     public void Speed3x()
     {
         timeSpeed = 3f;
+    }
+    public string GetCurrentDate()
+    {
+        return currentDate.ToString("yyyy - MM - dd");
     }
 }
