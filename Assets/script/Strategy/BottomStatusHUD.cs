@@ -19,6 +19,8 @@ public class BottomStatusHUD : MonoBehaviour
     public TextMeshProUGUI intelPreviewText;
     public TextMeshProUGUI severityPreviewText;
 
+    private District cachedDistrict;
+
     void Awake()
     {
         Instance = this;
@@ -32,33 +34,54 @@ public class BottomStatusHUD : MonoBehaviour
 
     public void RefreshSelectedRegion()
     {
-        if (District.currentSelected == null)
+        // 현재 선택된 지역이 있으면 HUD가 기억
+        if (District.currentSelected != null)
+        {
+            cachedDistrict = District.currentSelected;
+        }
+
+        // 기억된 지역도 없으면 초기화
+        if (cachedDistrict == null)
         {
             if (regionNameText != null)
                 regionNameText.text = "NONE";
 
             SetValues(0, 0, 0);
+            ClearPreview();
             return;
         }
 
-        District d = District.currentSelected;
-
         if (regionNameText != null)
-            regionNameText.text = d.gameObject.name;
+            regionNameText.text = cachedDistrict.gameObject.name;
 
-        SetValues(d.control, d.intel, d.severity);
+        SetValues(
+            cachedDistrict.control,
+            cachedDistrict.intel,
+            cachedDistrict.severity
+        );
+    }
+
+    public void SetTargetDistrict(District district)
+    {
+        cachedDistrict = district;
+        RefreshSelectedRegion();
+    }
+
+    public District GetTargetDistrict()
+    {
+        return cachedDistrict;
     }
 
     public void SetValues(int control, int intel, int severity)
     {
         if (controlSlider != null)
-            controlSlider.value = control / 100f;
+            controlSlider.value = control;
 
         if (intelSlider != null)
-            intelSlider.value = intel / 100f;
+            intelSlider.value = intel;
 
         if (severitySlider != null)
-            severitySlider.value = severity / 100f;
+            severitySlider.value = severity;
     }
 
     public void ShowPreview(int controlDelta, int intelDelta, int severityDelta)
