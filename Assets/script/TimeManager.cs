@@ -64,4 +64,13 @@ public class TimeManager : MonoBehaviour
     {
         return currentDate.ToString("yyyy - MM - dd");
     }
+    public bool IsPaused()
+    {
+        return timeSpeed <= 0f;
+    }
+    public float GetTimeSpeed()
+    {
+        return timeSpeed;
+    }
+    
 }
