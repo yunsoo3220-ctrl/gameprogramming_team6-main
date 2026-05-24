@@ -73,7 +73,7 @@ public class OperationProgressManager : MonoBehaviour
             progressPanel.SetActive(false);
     }
 
-    public void AddOperation(District targetDistrict, StrategyData data)
+    public void StartOperation(District targetDistrict, StrategyData data)
     {
         if (targetDistrict == null || data == null)
             return;
@@ -119,18 +119,37 @@ public class OperationProgressManager : MonoBehaviour
 
         op.targetDistrict.ApplyStrategyEffect(op.data);
 
-        Debug.Log(
-        "[완료] " +
-        op.data.strategyName +
-        " / 지역: " +
-        op.targetDistrict.gameObject.name );
+        RefreshSelectedDistrictUI(op.targetDistrict);
 
+        Debug.Log(
+            "[완료] " +
+            op.data.strategyName +
+            " / 지역: " +
+            op.targetDistrict.gameObject.name
+        );
 
         if (RandomEventManager.Instance != null)
-            RandomEventManager.Instance.CheckExampleEvent(op.targetDistrict);
+            RandomEventManager.Instance.CheckRandomEvents(op.targetDistrict);
 
         if (op.rowObject != null)
             Destroy(op.rowObject);
+    }
+    void RefreshSelectedDistrictUI(District targetDistrict)
+    {
+        if (targetDistrict == null)
+            return;
+
+        if (District.currentSelected != targetDistrict)
+            return;
+
+        if (BottomStatusHUD.Instance != null)
+        {
+            BottomStatusHUD.Instance.ForceRefresh(targetDistrict);
+        }
+        else
+        {
+            Debug.LogWarning("BottomStatusHUD.Instance를 찾지 못했습니다.");
+        }
     }
 
     class RunningOperation

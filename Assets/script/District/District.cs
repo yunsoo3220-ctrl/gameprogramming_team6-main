@@ -219,26 +219,20 @@ public class District : MonoBehaviour
         if (data == null)
             return;
 
-        control =
-            Mathf.Clamp(control + data.controlDelta, 0, 100);
+        control = Mathf.Clamp(control + data.controlEffect, 0, 100);
+        intel = Mathf.Clamp(intel + data.intelEffect, 0, 100);
+        severity = Mathf.Clamp(severity + data.severityEffect, 0, 100);
 
-        intel =
-            Mathf.Clamp(intel + data.intelDelta, 0, 100);
+        traffic = Mathf.Clamp(traffic + data.trafficDelta, 0, 100);
 
-        severity =
-            Mathf.Clamp(severity + data.severityDelta, 0, 100);
+        if (data.sendTrafficToAdjacent)
+        {
+            SendTrafficToAdjacentByPercent(data.trafficSendPercent);
+        }
 
-        traffic =
-            Mathf.Clamp(traffic + data.trafficDelta, 0, 100);
-
-        infectedPC =
-            Mathf.Clamp(infectedPC + Random.Range(0.5f, 2.5f), 0f, 100f);
-
-        zombiePC =
-            Mathf.Clamp(zombiePC + Random.Range(0.1f, 1f), 0f, 100f);
-
-        normalPC =
-            Mathf.Clamp(100f - infectedPC - zombiePC, 0f, 100f);
+        infectedPC = Mathf.Clamp(infectedPC + Random.Range(0.5f, 2.5f), 0f, 100f);
+        zombiePC = Mathf.Clamp(zombiePC + Random.Range(0.1f, 1f), 0f, 100f);
+        normalPC = Mathf.Clamp(100f - infectedPC - zombiePC, 0f, 100f);
 
         NormalizeInternetStatus();
         ApplyTrafficColor();
@@ -250,40 +244,41 @@ public class District : MonoBehaviour
             BottomStatusHUD.Instance.RefreshSelectedRegion();
     }
 
-    public void SendTrafficToAdjacent(int amount)
+    void SendTrafficToAdjacent(int percent)
     {
-        if (adjacentDistricts == null ||
-            adjacentDistricts.Count == 0)
+        if (adjacentDistricts == null || adjacentDistricts.Count == 0)
             return;
 
-        amount = Mathf.Clamp(amount, 0, traffic);
+        float sendAmount = traffic * (percent / 100f);
 
-        if (amount <= 0)
+        if (sendAmount <= 0)
             return;
 
-        traffic -= amount;
+        float amountPerDistrict =
+            sendAmount / adjacentDistricts.Count;
 
-        int divided =
-            Mathf.Max(1, amount / adjacentDistricts.Count);
+        traffic -= Mathf.RoundToInt(sendAmount);
 
         foreach (District d in adjacentDistricts)
         {
             if (d == null)
                 continue;
 
-            d.traffic =
-                Mathf.Clamp(d.traffic + divided, 0, 100);
+            d.traffic += Mathf.RoundToInt(amountPerDistrict);
+            d.traffic = Mathf.Clamp(d.traffic, 0, 100);
 
             d.ApplyTrafficColor();
         }
 
+        traffic = Mathf.Clamp(traffic, 0, 100);
+
         ApplyTrafficColor();
 
-        if (StatusPanelManager.Instance != null)
-            StatusPanelManager.Instance.Refresh();
-
-        if (BottomStatusHUD.Instance != null)
-            BottomStatusHUD.Instance.RefreshSelectedRegion();
+        Debug.Log(
+            gameObject.name +
+            " → 인접 지역으로 트래픽 전송: " +
+            sendAmount
+        );
     }
     public float GetStrategySuccessRate()
     {
@@ -339,5 +334,48 @@ public class District : MonoBehaviour
         }
 
         normalPC = Mathf.Clamp(100f - infectedPC - zombiePC, 0f, 100f);
+    }
+    public void SendTrafficToAdjacentByPercent(int percent)
+    {
+        if (adjacentDistricts == null || adjacentDistricts.Count == 0)
+            return;
+
+        percent = Mathf.Clamp(percent, 0, 100);
+
+        int sendAmount = Mathf.RoundToInt(traffic * (percent / 100f));
+
+        if (sendAmount <= 0)
+            return;
+
+        sendAmount = Mathf.Clamp(sendAmount, 0, traffic);
+
+        int amountPerDistrict = Mathf.Max(1, sendAmount / adjacentDistricts.Count);
+
+        traffic = Mathf.Clamp(traffic - sendAmount, 0, 100);
+
+        foreach (District d in adjacentDistricts)
+        {
+            if (d == null)
+                continue;
+
+            d.traffic = Mathf.Clamp(d.traffic + amountPerDistrict, 0, 100);
+            d.ApplyTrafficColor();
+        }
+
+        ApplyTrafficColor();
+
+        if (StatusPanelManager.Instance != null)
+            StatusPanelManager.Instance.Refresh();
+
+        if (BottomStatusHUD.Instance != null)
+            BottomStatusHUD.Instance.RefreshSelectedRegion();
+
+        Debug.Log(
+            gameObject.name +
+            " 트래픽 " +
+            sendAmount +
+            " 전송 / 인접 지역당 +" +
+            amountPerDistrict
+        );
     }
 }

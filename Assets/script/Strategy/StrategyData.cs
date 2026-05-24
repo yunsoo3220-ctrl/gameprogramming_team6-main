@@ -1,32 +1,32 @@
 using UnityEngine;
 
-public enum StrategyType
-{
-    General,
-    Hack,
-    Communicate
-}
-
 [System.Serializable]
 public class StrategyData
 {
+    [Header("Basic Info")]
     public string strategyName;
 
     [TextArea]
     public string description;
 
-    [Header("Stat Effect")]
-    public int controlDelta;
-    public int intelDelta;
-    public int severityDelta;
+    [Header("Effect")]
+    public int controlEffect;
+    public int intelEffect;
+    public int severityEffect;
+    public int trafficDelta;
+
+    [Header("Requirement")]
+    public int requiredInformation = 0;
 
     [Header("Duration")]
-    public float durationDays = 5f;
+    public float durationDays = 30f;
 
-    [Header("Strategy Type")]
-    public StrategyType strategyType = StrategyType.General;
+    [Header("Type")]
+    public string strategyType = "General";
 
-    [Header("Traffic Effect")]
-    public int trafficDelta = 0;
-    public int trafficSendAmount = 0;
+    [Header("Communicate Effect")]
+    public bool sendTrafficToAdjacent = false;
+
+    [Range(0, 100)]
+    public int trafficSendPercent = 0;
 }

@@ -16,6 +16,10 @@ public class StrategyManager : MonoBehaviour
     public GameObject hackPanel;
     public GameObject communicatePanel;
 
+    [Header("Shared Strategy Detail UI")]
+    public GameObject strategyInfoPanel;
+    public GameObject executeButton;
+
     [Header("Tab Button Images")]
     public Image osButtonImage;
     public Image generalButtonImage;
@@ -41,6 +45,7 @@ public class StrategyManager : MonoBehaviour
             strategyPanel.SetActive(false);
 
         HideAllPanels();
+        HideStrategyDetailUI();
     }
 
     void HideAllPanels()
@@ -59,8 +64,11 @@ public class StrategyManager : MonoBehaviour
             return;
         }
 
-        strategyPanel.SetActive(true);
-        regionNameText.text = District.currentSelected.gameObject.name;
+        if (strategyPanel != null)
+            strategyPanel.SetActive(true);
+
+        if (regionNameText != null)
+            regionNameText.text = District.currentSelected.gameObject.name;
 
         if (TimeManager.instance != null)
             TimeManager.instance.Pause();
@@ -70,7 +78,8 @@ public class StrategyManager : MonoBehaviour
 
     public void CloseStrategy()
     {
-        strategyPanel.SetActive(false);
+        if (strategyPanel != null)
+            strategyPanel.SetActive(false);
 
         if (TimeManager.instance != null)
             TimeManager.instance.Speed1x();
@@ -83,6 +92,7 @@ public class StrategyManager : MonoBehaviour
         if (osPanel != null)
             osPanel.SetActive(true);
 
+        HideStrategyDetailUI();
         SetActiveTab(osButtonImage);
         UpdateOSPanel();
     }
@@ -94,6 +104,7 @@ public class StrategyManager : MonoBehaviour
         if (generalPanel != null)
             generalPanel.SetActive(true);
 
+        ShowStrategyDetailUI();
         SetActiveTab(generalButtonImage);
     }
 
@@ -104,6 +115,7 @@ public class StrategyManager : MonoBehaviour
         if (hackPanel != null)
             hackPanel.SetActive(true);
 
+        ShowStrategyDetailUI();
         SetActiveTab(hackButtonImage);
     }
 
@@ -114,7 +126,29 @@ public class StrategyManager : MonoBehaviour
         if (communicatePanel != null)
             communicatePanel.SetActive(true);
 
+        ShowStrategyDetailUI();
         SetActiveTab(communicateButtonImage);
+    }
+
+    void HideStrategyDetailUI()
+    {
+        if (strategyInfoPanel != null)
+            strategyInfoPanel.SetActive(false);
+
+        if (executeButton != null)
+            executeButton.SetActive(false);
+    }
+
+    void ShowStrategyDetailUI()
+    {
+        if (strategyInfoPanel != null)
+            strategyInfoPanel.SetActive(true);
+
+        if (executeButton != null)
+            executeButton.SetActive(true);
+
+        if (StrategyDetailManager.Instance != null)
+            StrategyDetailManager.Instance.ShowDefaultInfo();
     }
 
     void SetActiveTab(Image activeButton)
@@ -146,9 +180,7 @@ public class StrategyManager : MonoBehaviour
         }
 
         if (startDateText != null)
-        {
             startDateText.text = "ACTIVATION DATE: 2098 - 01 - 01";
-        }
 
         if (currentDateText != null)
         {
@@ -167,8 +199,6 @@ public class StrategyManager : MonoBehaviour
         }
 
         if (systemStateText != null)
-        {
             systemStateText.text = "SYSTEM STATE: DORMANT";
-        }
     }
 }

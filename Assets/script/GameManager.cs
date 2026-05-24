@@ -1,7 +1,6 @@
 using UnityEngine;
 using TMPro;
 
-
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
@@ -70,6 +69,7 @@ public class GameManager : MonoBehaviour
         if (TimeManager.instance != null)
             TimeManager.instance.Speed1x();
 
-       
+        if (RandomEventManager.Instance != null)
+            RandomEventManager.Instance.TriggerIntroEvent();
     }
 }

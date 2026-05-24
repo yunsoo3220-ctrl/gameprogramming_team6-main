@@ -64,7 +64,18 @@ public class BottomStatusHUD : MonoBehaviour
     public void SetTargetDistrict(District district)
     {
         cachedDistrict = district;
-        RefreshSelectedRegion();
+
+        if (cachedDistrict == null)
+            return;
+
+        if (regionNameText != null)
+            regionNameText.text = cachedDistrict.gameObject.name;
+
+        SetValues(
+            cachedDistrict.control,
+            cachedDistrict.intel,
+            cachedDistrict.severity
+        );
     }
 
     public District GetTargetDistrict()
@@ -117,5 +128,23 @@ public class BottomStatusHUD : MonoBehaviour
             return value.ToString();
 
         return "";
+    }
+    public void ForceRefresh(District district)
+    {
+        if (district == null)
+            return;
+
+        cachedDistrict = district;
+
+        if (regionNameText != null)
+            regionNameText.text = cachedDistrict.gameObject.name;
+
+        SetValues(
+            cachedDistrict.control,
+            cachedDistrict.intel,
+            cachedDistrict.severity
+        );
+
+        ClearPreview();
     }
 }

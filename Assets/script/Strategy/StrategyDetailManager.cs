@@ -1,42 +1,63 @@
-using UnityEngine;
-using UnityEngine.UI;
 using TMPro;
+using UnityEngine;
 
 public class StrategyDetailManager : MonoBehaviour
 {
     public static StrategyDetailManager Instance;
 
-    [Header("Detail Texts")]
-    public TextMeshProUGUI strategyNameText;
-    public TextMeshProUGUI strategyDescText;
-    public TextMeshProUGUI strategyEffectText;
+    [Header("UI")]
+    public TMP_Text strategyNameText;
+    public TMP_Text strategyDescText;
+    public TMP_Text strategyEffectText;
 
-    [Header("Execute Button")]
-    public Button executeButton;
-    public TextMeshProUGUI executeButtonText;
+    [Header("Panels")]
+    public GameObject strategyPanel;
+    public GameObject strategyInfoPanel;
 
-    private StrategyTileButton selectedTile;
+    private StrategyData selectedStrategy;
 
     void Awake()
     {
         Instance = this;
-
-        if (executeButton != null)
-            executeButton.onClick.AddListener(ExecuteSelected);
     }
 
-    void Start()
+
+    public void ShowDefaultInfo()
     {
-        ClearDetail();
+        selectedStrategy = null;
+
+        if (strategyInfoPanel != null)
+            strategyInfoPanel.SetActive(true);
+
+        if (strategyNameText != null)
+            strategyNameText.text = "   전략을 선택하십시오";
+
+        if (strategyDescText != null)
+            strategyDescText.text = "전략 타일을 클릭하여 전략을 수행.";
+
+        if (strategyEffectText != null)
+            strategyEffectText.text =
+                "CONTROL -\n" +
+                "INTEL -\n" +
+                "SEVERITY -\n" +
+                "TRAFFIC -\n\n" +
+                "REQUIRED INFO: -\n" +
+                "DURATION: -\n" +
+                "TYPE: -";
     }
 
-    public void SelectStrategy(StrategyTileButton tile)
+    public void ShowStrategyDetail(StrategyData data)
     {
-        if (tile == null || tile.data == null)
+        if (data == null)
+        {
+            Debug.LogWarning("StrategyData가 없습니다.");
             return;
+        }
 
-        selectedTile = tile;
-        StrategyData data = tile.data;
+        selectedStrategy = data;
+
+        if (strategyInfoPanel != null)
+            strategyInfoPanel.SetActive(true);
 
         if (strategyNameText != null)
             strategyNameText.text = data.strategyName;
@@ -47,128 +68,83 @@ public class StrategyDetailManager : MonoBehaviour
         if (strategyEffectText != null)
         {
             strategyEffectText.text =
-                "CONTROL " + FormatDelta(data.controlDelta) + "\n" +
-                "INTEL " + FormatDelta(data.intelDelta) + "\n" +
-                "SEVERITY " + FormatDelta(data.severityDelta) + "\n" +
-                "TRAFFIC " + FormatDelta(data.trafficDelta) + "\n\n" +
-                "DURATION: " + data.durationDays.ToString("F0") + " DAYS\n" +
+                "CONTROL +" + data.controlEffect + "\n" +
+                "INTEL +" + data.intelEffect + "\n" +
+                "SEVERITY +" + data.severityEffect + "\n" +
+                "TRAFFIC " + data.trafficDelta + "\n\n" +
+                "REQUIRED INFO: " + data.requiredInformation + "\n" +
+                "DURATION: " + data.durationDays + " DAYS\n" +
                 "TYPE: " + data.strategyType;
         }
 
-        if (executeButtonText != null)
-            executeButtonText.text = "EXECUTE";
-
-        if (executeButton != null)
-            executeButton.interactable = true;
-
-        if (BottomStatusHUD.Instance != null)
-        {
-            BottomStatusHUD.Instance.ShowPreview(
-                data.controlDelta,
-                data.intelDelta,
-                data.severityDelta
-            );
-        }
+        
     }
 
-    void ExecuteSelected()
+    public void SelectStrategy(StrategyTileButton tile)
     {
-        if (selectedTile == null || selectedTile.data == null)
-            return;
-
-        District targetDistrict = null;
-
-        if (BottomStatusHUD.Instance != null)
-            targetDistrict = BottomStatusHUD.Instance.GetTargetDistrict();
-
-        if (targetDistrict == null)
-            targetDistrict = District.currentSelected;
-
-        if (targetDistrict == null)
+        if (tile == null)
         {
-            Debug.LogWarning("전략을 실행할 지역이 없습니다.");
+            Debug.LogWarning("선택된 타일이 없습니다.");
             return;
         }
 
-        if (!targetDistrict.CanRunStrategy())
+        ShowStrategyDetail(tile.data);
+    }
+
+    public void ExecuteSelectedStrategy()
+    {
+        if (selectedStrategy == null)
         {
-            Debug.LogWarning(targetDistrict.gameObject.name + " 지역은 트래픽이 0이라 전략을 실행할 수 없습니다.");
+            Debug.LogWarning("선택된 전략이 없습니다.");
             return;
         }
 
-        StrategyData data = selectedTile.data;
+        District selectedDistrict = District.currentSelected;
 
-        float successRate = targetDistrict.GetStrategySuccessRate();
-        float roll = Random.value;
+        if (selectedDistrict == null)
+        {
+            Debug.LogWarning("지역이 선택되지 않았습니다.");
+            return;
+        }
 
-        if (roll > successRate)
+        if (selectedDistrict.intel < selectedStrategy.requiredInformation)
         {
             Debug.LogWarning(
-                "전략 실패: " +
-                data.strategyName +
-                " / 지역: " +
-                targetDistrict.gameObject.name +
-                " / 성공률: " +
-                Mathf.RoundToInt(successRate * 100f) + "%"
+                "정보력이 부족합니다. 현재 정보력: " +
+                selectedDistrict.intel +
+                " / 필요 정보력: " +
+                selectedStrategy.requiredInformation
             );
-
-            if (BottomStatusHUD.Instance != null)
-                BottomStatusHUD.Instance.ClearPreview();
-
-            if (StrategyManager.Instance != null)
-                StrategyManager.Instance.CloseStrategy();
-
             return;
         }
 
-        if (OperationProgressManager.Instance != null)
+        if (OperationProgressManager.Instance == null)
         {
-            OperationProgressManager.Instance.AddOperation(targetDistrict, data);
+            Debug.LogError("OperationProgressManager.Instance가 없습니다.");
+            return;
         }
+
+        OperationProgressManager.Instance.StartOperation(
+            selectedDistrict,
+            selectedStrategy
+        );
+
+        CloseStrategyPanelOnly();
+
+        selectedStrategy = null;
+
+        Debug.Log("전략 실행 시작 / 전략 탭 닫힘");
+    }
+
+    private void CloseStrategyPanelOnly()
+    {
+        // 중요:
+        // strategyInfoPanel은 끄지 않는다.
+        // 꺼버리면 다음에 StrategyPanel을 다시 열었을 때 오른쪽 설명 패널이 사라진 상태로 남는다.
+
+        if (strategyPanel != null)
+            strategyPanel.SetActive(false);
         else
-        {
-            Debug.LogWarning("OperationProgressManager가 없습니다.");
-            return;
-        }
-
-        if (BottomStatusHUD.Instance != null)
-            BottomStatusHUD.Instance.ClearPreview();
-
-        if (StrategyManager.Instance != null)
-            StrategyManager.Instance.CloseStrategy();
-    }
-
-    public void ClearDetail()
-    {
-        selectedTile = null;
-
-        if (strategyNameText != null)
-            strategyNameText.text = "SELECT STRATEGY";
-
-        if (strategyDescText != null)
-            strategyDescText.text = "Choose a strategy tile to inspect its effect.";
-
-        if (strategyEffectText != null)
-            strategyEffectText.text = "";
-
-        if (executeButtonText != null)
-            executeButtonText.text = "EXECUTE";
-
-        if (executeButton != null)
-            executeButton.interactable = false;
-
-        if (BottomStatusHUD.Instance != null)
-            BottomStatusHUD.Instance.ClearPreview();
-    }
-
-    string FormatDelta(int value)
-    {
-        if (value > 0)
-            return "+" + value;
-
-        if (value < 0)
-            return value.ToString();
-
-        return "0";
+            Debug.LogWarning("StrategyPanel이 연결되지 않았습니다.");
     }
 }
