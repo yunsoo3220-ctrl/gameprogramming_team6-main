@@ -53,24 +53,53 @@ public class OperationProgressManager : MonoBehaviour
         }
     }
 
-    public void TogglePanel()
-    {
-        if (progressPanel == null)
-            return;
-
-        progressPanel.SetActive(!progressPanel.activeSelf);
-    }
-
     public void OpenPanel()
     {
         if (progressPanel != null)
             progressPanel.SetActive(true);
+
+        if (LockdownManager.Instance != null)
+            LockdownManager.Instance.HideLockdownUI();
+
+        if (UIManager.Instance != null)
+            UIManager.Instance.HideSettingsButton();
     }
 
     public void ClosePanel()
     {
         if (progressPanel != null)
             progressPanel.SetActive(false);
+
+        if (LockdownManager.Instance != null)
+            LockdownManager.Instance.ShowLockdownUI();
+
+        if (UIManager.Instance != null)
+            UIManager.Instance.ShowSettingsButton();
+    }
+
+    public void TogglePanel()
+    {
+        if (progressPanel == null)
+            return;
+
+        bool nextState = !progressPanel.activeSelf;
+        progressPanel.SetActive(nextState);
+
+        if (LockdownManager.Instance != null)
+        {
+            if (nextState)
+                LockdownManager.Instance.HideLockdownUI();
+            else
+                LockdownManager.Instance.ShowLockdownUI();
+        }
+
+        if (UIManager.Instance != null)
+        {
+            if (nextState)
+                UIManager.Instance.HideSettingsButton();
+            else
+                UIManager.Instance.ShowSettingsButton();
+        }
     }
 
     public void StartOperation(District targetDistrict, StrategyData data)
@@ -134,6 +163,7 @@ public class OperationProgressManager : MonoBehaviour
         if (op.rowObject != null)
             Destroy(op.rowObject);
     }
+
     void RefreshSelectedDistrictUI(District targetDistrict)
     {
         if (targetDistrict == null)

@@ -54,6 +54,9 @@ public class GameManager : MonoBehaviour
         if (startPanel != null)
             startPanel.SetActive(false);
 
+        if (UIManager.Instance != null)
+            UIManager.Instance.ShowSettingsButton();
+
         if (strategyButton != null)
             strategyButton.SetActive(true);
 

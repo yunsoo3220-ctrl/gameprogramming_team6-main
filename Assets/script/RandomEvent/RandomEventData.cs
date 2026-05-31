@@ -4,7 +4,8 @@ public enum RandomEventType
 {
     Intro,
     Government,
-    Social
+    Social,
+    Lockdown
 }
 
 [System.Serializable]

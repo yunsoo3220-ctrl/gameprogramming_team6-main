@@ -45,6 +45,12 @@ public class StatusPanelManager : MonoBehaviour
         if (statusPanel != null)
             statusPanel.SetActive(true);
 
+        if (LockdownManager.Instance != null)
+            LockdownManager.Instance.HideLockdownUI();
+        
+        if (UIManager.Instance != null)
+            UIManager.Instance.HideSettingsButton();
+
         Refresh();
     }
 
@@ -52,6 +58,11 @@ public class StatusPanelManager : MonoBehaviour
     {
         if (statusPanel != null)
             statusPanel.SetActive(false);
+
+        if (LockdownManager.Instance != null)
+            LockdownManager.Instance.ShowLockdownUI();
+        if (UIManager.Instance != null)
+            UIManager.Instance.ShowSettingsButton();
     }
 
     public void Refresh()

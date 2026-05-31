@@ -5,8 +5,10 @@ public class RandomEventManager : MonoBehaviour
 {
     public static RandomEventManager Instance;
 
-    [Header("Popup")]
-    public RandomEventPopup popup;
+    [Header("Popups")]
+    public RandomEventPopup normalPopup;
+    public RandomEventPopup introPopup;
+    public RandomEventPopup lockdownPopup;
 
     [Header("Ticker")]
     public EventTickerUI tickerUI;
@@ -98,15 +100,15 @@ public class RandomEventManager : MonoBehaviour
         district.ApplyTrafficColor();
 
         if (District.currentSelected == district && BottomStatusHUD.Instance != null)
-        {
             BottomStatusHUD.Instance.ForceRefresh(district);
-        }
 
         if (StatusPanelManager.Instance != null)
-        {
             StatusPanelManager.Instance.Refresh();
-        }
+
+        if (LockdownManager.Instance != null)
+            LockdownManager.Instance.CheckLockdownStartCondition();
     }
+
     public void TriggerEvent(
         string title,
         string description,
@@ -114,16 +116,21 @@ public class RandomEventManager : MonoBehaviour
         string region,
         RandomEventType eventType)
     {
+        string tickerEffect = effect.Replace("\r\n", " | ").Replace("\n", " | ");
+        string logEffect = effect.Replace("\r\n", " / ").Replace("\n", " / ");
+
         string message =
             "[SYSTEM EVENT] " +
             region +
             ": " +
             title +
             " | " +
-            effect;
+            tickerEffect;
 
-        if (popup != null)
-            popup.Show(title, description, effect, region, eventType);
+        RandomEventPopup selectedPopup = GetPopupByType(eventType);
+
+        if (selectedPopup != null)
+            selectedPopup.Show(title, description, effect, region, eventType);
 
         if (tickerUI != null)
             tickerUI.SetMessage(message);
@@ -134,11 +141,22 @@ public class RandomEventManager : MonoBehaviour
                 TimeManager.instance.GetCurrentDate(),
                 region,
                 title,
-                effect
+                logEffect
             );
         }
 
         Debug.Log("[EVENT] " + message);
+    }
+
+    RandomEventPopup GetPopupByType(RandomEventType eventType)
+    {
+        if (eventType == RandomEventType.Intro)
+            return introPopup;
+
+        if (eventType == RandomEventType.Lockdown)
+            return lockdownPopup;
+
+        return normalPopup;
     }
 
     void CreateEventRow(

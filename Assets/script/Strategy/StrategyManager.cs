@@ -67,6 +67,12 @@ public class StrategyManager : MonoBehaviour
         if (strategyPanel != null)
             strategyPanel.SetActive(true);
 
+        if (LockdownManager.Instance != null)
+            LockdownManager.Instance.HideLockdownUI();
+
+        if (UIManager.Instance != null)
+            UIManager.Instance.HideSettingsButton();
+
         if (regionNameText != null)
             regionNameText.text = District.currentSelected.gameObject.name;
 
@@ -80,6 +86,12 @@ public class StrategyManager : MonoBehaviour
     {
         if (strategyPanel != null)
             strategyPanel.SetActive(false);
+
+        if (LockdownManager.Instance != null)
+            LockdownManager.Instance.ShowLockdownUI();
+
+        if (UIManager.Instance != null)
+            UIManager.Instance.ShowSettingsButton();
 
         if (TimeManager.instance != null)
             TimeManager.instance.Speed1x();
