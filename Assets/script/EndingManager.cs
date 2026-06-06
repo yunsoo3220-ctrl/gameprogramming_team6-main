@@ -113,4 +113,6 @@ public class EndingManager : MonoBehaviour
         PlayerPrefs.DeleteKey("IsSecretFound");
         PlayerPrefs.Save();
     }
+    
+
 }
